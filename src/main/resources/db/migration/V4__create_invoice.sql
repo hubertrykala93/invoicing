@@ -1,0 +1,21 @@
+CREATE TABLE invoice (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP NOT NULL,
+    number VARCHAR(150) UNIQUE,
+    status VARCHAR(150) NOT NULL DEFAULT 'DRAFT',
+    contractor_id UUID NOT NULL REFERENCES contractor(id),
+    buyer_name VARCHAR(150),
+    buyer_nip VARCHAR(10),
+    buyer_street VARCHAR(100),
+    buyer_postal_code VARCHAR(150),
+    buyer_city VARCHAR(50),
+    buyer_country VARCHAR(150),
+    sale_date DATE NOT NULL,
+    issue_date DATE,
+    payment_term_days INTEGER,
+    due_date DATE,
+    total_net DECIMAL(12,2),
+    total_vat DECIMAL(12,2),
+    total_gross DECIMAL(12,2),
+    notes VARCHAR(500)
+)

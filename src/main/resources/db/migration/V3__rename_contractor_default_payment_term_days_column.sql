@@ -1,0 +1,1 @@
+ALTER TABLE contractor RENAME COLUMN defaultpaymenttermdays TO default_payment_term_days;
