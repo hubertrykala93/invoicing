@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.invoicing.contractor.Contractor;
+import com.example.invoicing.contractor.ContractorEntity;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
@@ -24,11 +24,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Setter;
 
 @Entity
-public class Invoice {
+@Table(name = "invoice")
+public class InvoiceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Setter(AccessLevel.NONE)
@@ -47,7 +49,7 @@ public class Invoice {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "contractor_id", nullable = false)
-    private Contractor contractor;
+    private ContractorEntity contractor;
 
     @Embedded
     @AttributeOverride(name = "name", column = @Column(name = "buyer_name"))
@@ -69,10 +71,10 @@ public class Invoice {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice", orphanRemoval = true)
     @OrderBy(value = "position")
-    private List<Item> items = new ArrayList<>();
+    private List<ItemEntity> items = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice", orphanRemoval = true)
-    private List<Payment> payments = new ArrayList<>();
+    private List<PaymentEntity> payments = new ArrayList<>();
 
     @Column(precision = 12, scale = 2)
     private BigDecimal totalNet;

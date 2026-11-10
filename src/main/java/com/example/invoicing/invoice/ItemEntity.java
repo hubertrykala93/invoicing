@@ -13,11 +13,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Setter;
 
 @Entity
-public class Item {
+@Table(name = "item")
+public class ItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Setter(AccessLevel.NONE)
@@ -25,7 +27,7 @@ public class Item {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id", nullable = false)
-    private Invoice invoice;
+    private InvoiceEntity invoice;
 
     @Column(nullable = false)
     private Integer position;

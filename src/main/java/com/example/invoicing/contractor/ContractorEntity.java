@@ -1,4 +1,4 @@
-package com.example.invoicing.seller;
+package com.example.invoicing.contractor;
 
 import java.util.UUID;
 
@@ -10,14 +10,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Setter
-@Getter
-public class Seller {
+@Table(name = "contractor")
+public class ContractorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Setter(AccessLevel.NONE)
@@ -29,10 +28,16 @@ public class Seller {
     @Column(nullable = false, unique = true, length = 10)
     private String nip;
 
-    @Column(nullable = false)
     @Embedded
+    @Column(nullable = false)
     private Address address;
 
-    @Column(nullable = false, unique = true, length = 26)
-    private String bankAccount;
+    private String email;
+
+    @Column(nullable = false)
+    private Integer defaultPaymentTermDays = 14;
+
+    @Column(nullable = false)
+    private Boolean active = true;
+
 }

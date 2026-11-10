@@ -14,11 +14,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Setter;
 
 @Entity
-public class Payment {
+@Table(name = "payment")
+public class PaymentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Setter(AccessLevel.NONE)
@@ -26,7 +28,7 @@ public class Payment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id", nullable = false)
-    private Invoice invoice;
+    private InvoiceEntity invoice;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
