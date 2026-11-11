@@ -12,10 +12,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "contractor")
+@Getter
+@Setter
+@ToString
 public class ContractorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,6 +43,14 @@ public class ContractorEntity {
     private Integer defaultPaymentTermDays = 14;
 
     @Column(nullable = false)
+    @Setter(AccessLevel.NONE)
     private Boolean active = true;
 
+    public void deactivate() {
+        active = false;
+    }
+
+    public void activate() {
+        active = true;
+    }
 }
