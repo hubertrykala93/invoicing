@@ -53,4 +53,8 @@ public class ContractorEntity {
     public void activate() {
         active = true;
     }
+
+    public boolean isActive() {
+        return active == true;
+    }
 }

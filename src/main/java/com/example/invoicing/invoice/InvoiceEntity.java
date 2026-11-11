@@ -26,10 +26,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "invoice")
+@Getter
+@Setter
+@ToString
 public class InvoiceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -77,14 +82,55 @@ public class InvoiceEntity {
     private List<PaymentEntity> payments = new ArrayList<>();
 
     @Column(precision = 12, scale = 2)
-    private BigDecimal totalNet;
+    private BigDecimal totalNet = BigDecimal.ZERO;
 
     @Column(precision = 12, scale = 2)
-    private BigDecimal totalVat;
+    private BigDecimal totalVat = BigDecimal.ZERO;
 
     @Column(precision = 12, scale = 2)
-    private BigDecimal totalGross;
+    private BigDecimal totalGross = BigDecimal.ZERO;
 
     @Column(length = 500)
     private String notes;
+
+    @Column(length = 200)
+    private String cancelReason;
+
+    public void addItem(ItemEntity itemEntity) {
+        itemEntity.setPosition(items.size() + 1);
+        itemEntity.setNetValue(itemEntity.calculateNetto(itemEntity));
+        itemEntity.setVatValue(itemEntity.calculateVat(itemEntity));
+        itemEntity.setGrossValue(itemEntity.calculateGross(itemEntity));
+        itemEntity.setInvoice(this);
+
+        items.add(itemEntity);
+
+        calculateTotal();
+    }
+
+    private void calculateTotal() {
+        totalNet = items.stream().map(ItemEntity::getNetValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+        totalVat = items.stream().map(ItemEntity::getVatValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+        totalGross = items.stream().map(ItemEntity::getGrossValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public boolean isOverdue() {
+        return (status == Status.ISSUED || status == Status.PARTIALLY_PAID) && dueDate.isBefore(LocalDate.now());
+    }
+
+    public BigDecimal getRemainingAmount() {
+        BigDecimal paymentsSum = payments.stream().map(PaymentEntity::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalGross.subtract(paymentsSum);
+    }
+
+    public void issue(LocalDate date) {
+        issueDate = date;
+        status = Status.ISSUED;
+        dueDate = issueDate.plusDays(paymentTermDays);
+    }
+
+    public void cancel() {
+        status = Status.CANCELLED;
+    }
 }

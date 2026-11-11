@@ -10,23 +10,36 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "year", "month" }))
-public class InvoiceNumberSequence {
+@Table(name = "invoice_number_sequence", uniqueConstraints = @UniqueConstraint(columnNames = { "year", "month" }))
+@Getter
+@Setter
+@ToString
+public class InvoiceNumberSequenceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Setter(AccessLevel.NONE)
     private UUID id;
 
     @Column(nullable = false)
-    private Integer year;
+    private int month;
 
     @Column(nullable = false)
-    private Integer month;
+    private int year;
 
     @Column(nullable = false)
-    private Integer lastNumber;
+    private int lastNumber;
 
+    protected InvoiceNumberSequenceEntity() {
+    }
+
+    protected InvoiceNumberSequenceEntity(int month, int year, int lastNumber) {
+        this.month = month;
+        this.year = year;
+        this.lastNumber = lastNumber;
+    }
 }

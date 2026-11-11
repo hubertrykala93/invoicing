@@ -1,0 +1,1 @@
+ALTER TABLE invoice ADD COLUMN cancel_reason VARCHAR(200);

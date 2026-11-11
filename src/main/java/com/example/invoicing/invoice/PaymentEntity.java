@@ -16,10 +16,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Table(name = "payment")
+@Getter
 public class PaymentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

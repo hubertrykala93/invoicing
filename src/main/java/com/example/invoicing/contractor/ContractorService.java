@@ -53,8 +53,8 @@ public class ContractorService {
     public ContractorResponse deactivate(UUID id) {
         ContractorEntity contractorEntity = getById(id);
 
-        if (contractorEntity.getActive() == false) {
-            throw new ApiException(ErrorCode.CONTRACTOR_ALREADY_DEACTIVATED, null);
+        if (!contractorEntity.isActive()) {
+            throw new ApiException(ErrorCode.CONTRACTOR_ALREADY_DEACTIVATED, "Contractor with id " + id + " is already deactivated.");
         }
 
         contractorEntity.deactivate();
@@ -66,8 +66,8 @@ public class ContractorService {
     public ContractorResponse activate(UUID id) {
         ContractorEntity contractorEntity = getById(id);
 
-        if (contractorEntity.getActive() == true) {
-            throw new ApiException(ErrorCode.CONTRACTOR_ALREADY_ACTIVATED, null);
+        if (contractorEntity.isActive()) {
+            throw new ApiException(ErrorCode.CONTRACTOR_ALREADY_ACTIVATED, "Contractor with id " + id + " is already activated.");
         }
 
         contractorEntity.activate();
@@ -94,7 +94,7 @@ public class ContractorService {
         return ContractorResponse.from(contractorEntity);
     }
 
-    private ContractorEntity getById(UUID id) {
+    public ContractorEntity getById(UUID id) {
         return contractorRepository.findById(id)
             .orElseThrow(() -> new ApiException(ErrorCode.CONTRACTOR_NOT_FOUND, "Contractor with id " + id + " was not found."));
     }
