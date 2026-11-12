@@ -9,9 +9,11 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class ItemCreateRequest {
     @NotBlank(message = "Item name is required")
     @Size(min = 2, max = 200, message = "Item name must be between {min} and {max} characters")

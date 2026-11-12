@@ -72,4 +72,22 @@ public class InvoiceController {
     public InvoiceResponse duplicate(@PathVariable UUID id) {
         return invoiceService.duplicate(id);
     }
+
+    @PostMapping("/{id}/items")
+    @ResponseStatus(HttpStatus.CREATED)
+    public InvoiceResponse createItem(@PathVariable UUID id, @RequestBody @Valid ItemCreateRequest request) {
+        return invoiceService.createItem(id, request);
+    }
+
+    @PutMapping("/{id}/items/{itemId}")
+    @ResponseStatus(HttpStatus.OK)
+    public InvoiceResponse updateItem(@PathVariable UUID id, @PathVariable UUID itemId, @RequestBody @Valid ItemCreateRequest request) {
+        return invoiceService.updateItem(id, itemId, request);
+    }
+
+    @DeleteMapping("/{id}/items/{itemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteItem(@PathVariable UUID id, @PathVariable UUID itemId) {
+        invoiceService.deleteItem(id, itemId);
+    }
 }

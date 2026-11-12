@@ -18,11 +18,13 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "item")
 @Getter
 @Setter
+@ToString
 public class ItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

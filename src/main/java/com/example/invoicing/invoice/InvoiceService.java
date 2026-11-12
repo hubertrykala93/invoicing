@@ -226,8 +226,95 @@ public class InvoiceService {
         return InvoiceResponse.from(duplicatedInvoice);
     }
 
+    @Transactional
+    public InvoiceResponse createItem(UUID id, ItemCreateRequest request) {
+        InvoiceEntity invoiceEntity = getById(id);
+
+        if (!invoiceEntity.isDraft()) {
+            throw new ApiException(
+                ErrorCode.INVOICE_NOT_EDITABLE,
+                "Items of invoice with id " + id + " cannot be modified because its status is " + invoiceEntity.getStatus()
+                    + ". Only " + Status.DRAFT + " invoices can be edited."
+            );
+        }
+
+        ItemEntity newItem = new ItemEntity();
+
+        newItem.setName(request.getName());
+        newItem.setQuantity(request.getQuantity());
+        newItem.setUnit(request.getUnit());
+        newItem.setNetUnitPrice(request.getNetUnitPrice());
+        newItem.setVatRate(request.getVatRate());
+        newItem.setInvoice(invoiceEntity);
+        newItem.setNetValue(newItem.calculateNetto(newItem));
+        newItem.setVatValue(newItem.calculateVat(newItem));
+        newItem.setGrossValue(newItem.calculateGross(newItem));
+        newItem.setPosition(invoiceEntity.getItems().size() + 1);
+
+        invoiceEntity.getItems().addLast(newItem);
+
+        invoiceRepository.save(invoiceEntity);
+
+        return InvoiceResponse.from(invoiceEntity);
+    }
+
+    @Transactional
+    public InvoiceResponse updateItem(UUID id, UUID itemId, ItemCreateRequest request) {
+        InvoiceEntity invoiceEntity = getById(id);
+
+        if (!invoiceEntity.isDraft()) {
+            throw new ApiException(
+                ErrorCode.INVOICE_NOT_EDITABLE,
+                "Items of invoice with id " + id + " cannot be modified because its status is " + invoiceEntity.getStatus()
+                    + ". Only " + Status.DRAFT + " invoices can be edited."
+            );
+        }
+
+        ItemEntity itemEntity = getItemById(invoiceEntity, itemId);
+
+        itemEntity.setName(request.getName());
+        itemEntity.setQuantity(request.getQuantity());
+        itemEntity.setUnit(request.getUnit());
+        itemEntity.setVatRate(request.getVatRate());
+        itemEntity.setNetUnitPrice(request.getNetUnitPrice());
+        itemEntity.setNetValue(itemEntity.calculateNetto(itemEntity));
+        itemEntity.setVatValue(itemEntity.calculateVat(itemEntity));
+        itemEntity.setGrossValue(itemEntity.calculateGross(itemEntity));
+
+        itemEntity.setInvoice(invoiceEntity);
+
+        invoiceRepository.save(invoiceEntity);
+
+        return InvoiceResponse.from(invoiceEntity);
+    }
+
+    @Transactional
+    public void deleteItem(UUID id, UUID itemId) {
+        InvoiceEntity invoiceEntity = getById(id);
+        ItemEntity itemEntity = getItemById(invoiceEntity, itemId);
+
+        if (!invoiceEntity.isDraft()) {
+            throw new ApiException(ErrorCode.INVOICE_NOT_EDITABLE, null);
+        }
+
+        invoiceEntity.removeItem(itemEntity);
+    }
+
     public InvoiceEntity getById(UUID id) {
         return invoiceRepository.findById(id)
             .orElseThrow(() -> new ApiException(ErrorCode.INVOICE_NOT_FOUND, "Invoice with id " + id + " was not found."));
+    }
+
+    private ItemEntity getItemById(InvoiceEntity invoiceEntity, UUID itemId) {
+        return invoiceEntity.getItems()
+            .stream()
+            .filter(i -> i.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(
+                () -> new ApiException(
+                    ErrorCode.ITEM_NOT_FOUND,
+                    "Item with id " + itemId + " was not found in invoice with id " + invoiceEntity.getId() + "."
+                )
+            );
     }
 }

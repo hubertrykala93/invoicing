@@ -5,9 +5,11 @@ import java.util.UUID;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
+@ToString
 public class ItemResponse {
     private UUID id;
     private Integer position;

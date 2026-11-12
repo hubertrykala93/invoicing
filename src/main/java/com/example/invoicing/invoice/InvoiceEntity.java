@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import com.example.invoicing.contractor.ContractorEntity;
 
@@ -28,13 +29,11 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "invoice")
 @Getter
 @Setter
-@ToString
 public class InvoiceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -108,6 +107,16 @@ public class InvoiceEntity {
         calculateTotal();
     }
 
+    public void removeItem(ItemEntity itemEntity) {
+        items.remove(itemEntity);
+
+        IntStream.range(0, items.size()).forEach(i -> {
+            items.get(i).setPosition(i + 1);
+        });
+
+        calculateTotal();
+    }
+
     private void calculateTotal() {
         totalNet = items.stream().map(ItemEntity::getNetValue).reduce(BigDecimal.ZERO, BigDecimal::add);
         totalVat = items.stream().map(ItemEntity::getVatValue).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -132,5 +141,9 @@ public class InvoiceEntity {
 
     public void cancel() {
         status = Status.CANCELLED;
+    }
+
+    public boolean isDraft() {
+        return status == Status.DRAFT;
     }
 }
