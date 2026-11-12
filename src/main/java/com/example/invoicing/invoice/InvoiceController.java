@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,11 +25,16 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/invoice")
 @RequiredArgsConstructor
 public class InvoiceController {
+    private static final int DEFAULT_PAGE_SIZE = 20;
+
     private final InvoiceService invoiceService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Page<InvoiceMinimalResponse> getAll(Pageable pageable, @ModelAttribute InvoiceFilter filter) {
+    public Page<InvoiceMinimalResponse> getAll(
+        @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @ModelAttribute InvoiceFilter filter
+    ) {
         return invoiceService.getAll(pageable, filter);
     }
 
@@ -89,5 +96,17 @@ public class InvoiceController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteItem(@PathVariable UUID id, @PathVariable UUID itemId) {
         invoiceService.deleteItem(id, itemId);
+    }
+
+    @PostMapping("/{id}/payments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public InvoiceResponse createPayment(@PathVariable UUID id, @RequestBody @Valid PaymentCreateRequest request) {
+        return invoiceService.createPayment(id, request);
+    }
+
+    @DeleteMapping("/{id}/payments/{paymentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public InvoiceResponse deletePayment(@PathVariable UUID id, @PathVariable UUID paymentId) {
+        return invoiceService.deletePayment(id, paymentId);
     }
 }

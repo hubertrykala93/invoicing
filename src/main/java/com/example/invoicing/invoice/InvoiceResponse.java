@@ -24,6 +24,7 @@ public class InvoiceResponse {
     private LocalDate issueDate;
     private Integer paymentTermDays;
     private List<ItemResponse> items;
+    private List<PaymentResponse> payments;
     private LocalDate dueDate;
     private BigDecimal totalNet;
     private BigDecimal totalVat;
@@ -42,6 +43,7 @@ public class InvoiceResponse {
             ContractorResponse.from(invoiceEntity.getContractor())
         );
         invoiceResponse.setItems(invoiceEntity.getItems().stream().map(i -> ItemResponse.from(i)).toList());
+        invoiceResponse.setPayments(invoiceEntity.getPayments().stream().map(i -> PaymentResponse.from(i)).toList());
         invoiceResponse.setBuyerSnapshot(invoiceEntity.getBuyerSnapshot());
         invoiceResponse.setSaleDate(invoiceEntity.getSaleDate());
         invoiceResponse.setIssueDate(invoiceEntity.getIssueDate());

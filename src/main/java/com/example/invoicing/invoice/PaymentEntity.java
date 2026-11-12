@@ -22,6 +22,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "payment")
 @Getter
+@Setter
 public class PaymentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

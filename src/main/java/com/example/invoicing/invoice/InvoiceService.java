@@ -15,7 +15,9 @@ import com.example.invoicing.contractor.ContractorService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InvoiceService {
@@ -24,7 +26,12 @@ public class InvoiceService {
     private final InvoiceNumberSequenceRepository invoiceNumberSequenceRepository;
 
     public Page<InvoiceMinimalResponse> getAll(Pageable pageable, InvoiceFilter filter) {
-        return invoiceRepository.getAllByFilter(pageable, filter.getStatus(), filter.getContractorId())
+        log.info("FILTER -> " + filter);
+        return invoiceRepository
+            .getAllByFilter(
+                pageable, filter.getStatus(), filter.getContractorId(), filter.getIssueDateFrom(), filter.getIssueDateTo(),
+                filter.getOverdue()
+            )
             .map(i -> InvoiceMinimalResponse.from(i));
     }
 
@@ -294,10 +301,73 @@ public class InvoiceService {
         ItemEntity itemEntity = getItemById(invoiceEntity, itemId);
 
         if (!invoiceEntity.isDraft()) {
-            throw new ApiException(ErrorCode.INVOICE_NOT_EDITABLE, null);
+            throw new ApiException(
+                ErrorCode.INVOICE_NOT_EDITABLE,
+                "Items of invoice with id " + id + " cannot be modified because its status is " + invoiceEntity.getStatus()
+                    + ". Only " + Status.DRAFT + " invoices can be edited."
+            );
         }
 
         invoiceEntity.removeItem(itemEntity);
+    }
+
+    @Transactional
+    public InvoiceResponse createPayment(UUID id, PaymentCreateRequest request) {
+        InvoiceEntity invoiceEntity = getById(id);
+
+        if (!invoiceEntity.isPayable()) {
+            throw new ApiException(
+                ErrorCode.INVOICE_NOT_PAYABLE,
+                "Payment cannot be registered for invoice with id " + id + " because its status is " + invoiceEntity.getStatus()
+                    + ". Payments are accepted only for " + Status.ISSUED + " and " + Status.PARTIALLY_PAID + " invoices."
+            );
+        }
+
+        if (request.getAmount().compareTo(invoiceEntity.getRemainingAmount()) > 0) {
+            throw new ApiException(
+                ErrorCode.OVERPAYMENT,
+                "Payment amount " + request.getAmount() + " exceeds the remaining amount " + invoiceEntity.getRemainingAmount()
+                    + " of invoice with id " + id + "."
+            );
+        }
+
+        if (request.getPaymentDate().isBefore(invoiceEntity.getIssueDate()) || request.getPaymentDate().isAfter(LocalDate.now())) {
+            throw new ApiException(
+                ErrorCode.INVALID_PAYMENT_DATE,
+                "Payment date " + request.getPaymentDate() + " is invalid. It must be between the issue date "
+                    + invoiceEntity.getIssueDate() + " and today (" + LocalDate.now() + ")."
+            );
+        }
+
+        PaymentEntity paymentEntity = request.toEntity();
+
+        invoiceEntity.addPayment(paymentEntity);
+
+        invoiceRepository.save(invoiceEntity);
+
+        return InvoiceResponse.from(invoiceEntity);
+    }
+
+    @Transactional
+    public InvoiceResponse deletePayment(UUID id, UUID paymentId) {
+        InvoiceEntity invoiceEntity = getById(id);
+
+        if (invoiceEntity.isCancelled()) {
+            throw new ApiException(
+                ErrorCode.PAYMENT_NOT_DELETABLE,
+                "Payments of invoice with id " + id + " cannot be deleted because the invoice is " + Status.CANCELLED + "."
+            );
+        }
+
+        PaymentEntity paymentEntity = getPaymentById(invoiceEntity, paymentId);
+
+        invoiceEntity.getPayments().remove(paymentEntity);
+
+        invoiceEntity.deletePayment();
+
+        invoiceRepository.save(invoiceEntity);
+
+        return InvoiceResponse.from(invoiceEntity);
     }
 
     public InvoiceEntity getById(UUID id) {
@@ -314,6 +384,19 @@ public class InvoiceService {
                 () -> new ApiException(
                     ErrorCode.ITEM_NOT_FOUND,
                     "Item with id " + itemId + " was not found in invoice with id " + invoiceEntity.getId() + "."
+                )
+            );
+    }
+
+    private PaymentEntity getPaymentById(InvoiceEntity invoiceEntity, UUID paymentId) {
+        return invoiceEntity.getPayments()
+            .stream()
+            .filter(p -> p.getId().equals(paymentId))
+            .findFirst()
+            .orElseThrow(
+                () -> new ApiException(
+                    ErrorCode.PAYMENT_NOT_FOUND,
+                    "Payment with id " + paymentId + " was not found in invoice with id " + invoiceEntity.getId() + "."
                 )
             );
     }

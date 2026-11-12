@@ -48,7 +48,7 @@ public class InvoiceEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Setter(AccessLevel.NONE)
+    // @Setter(AccessLevel.NONE)
     private Status status = Status.DRAFT;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -107,6 +107,30 @@ public class InvoiceEntity {
         calculateTotal();
     }
 
+    public void addPayment(PaymentEntity paymentEntity) {
+        payments.add(paymentEntity);
+
+        if (getPaymentsSum().compareTo(getTotalGross()) < 0) {
+            status = Status.PARTIALLY_PAID;
+        }
+
+        if (getPaymentsSum().compareTo(getTotalGross()) == 0) {
+            status = Status.PAID;
+        }
+
+        paymentEntity.setInvoice(this);
+    }
+
+    public void deletePayment() {
+        if (getTotalGross().compareTo(getRemainingAmount()) == 0) {
+            status = Status.ISSUED;
+        }
+
+        if (getTotalGross().compareTo(getRemainingAmount()) != 0) {
+            status = Status.PARTIALLY_PAID;
+        }
+    }
+
     public void removeItem(ItemEntity itemEntity) {
         items.remove(itemEntity);
 
@@ -128,9 +152,11 @@ public class InvoiceEntity {
     }
 
     public BigDecimal getRemainingAmount() {
-        BigDecimal paymentsSum = payments.stream().map(PaymentEntity::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return totalGross.subtract(getPaymentsSum());
+    }
 
-        return totalGross.subtract(paymentsSum);
+    public BigDecimal getPaymentsSum() {
+        return payments.stream().map(PaymentEntity::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public void issue(LocalDate date) {
@@ -145,5 +171,13 @@ public class InvoiceEntity {
 
     public boolean isDraft() {
         return status == Status.DRAFT;
+    }
+
+    public boolean isCancelled() {
+        return status == Status.CANCELLED;
+    }
+
+    public boolean isPayable() {
+        return status == Status.ISSUED || status == Status.PARTIALLY_PAID;
     }
 }
