@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.example.invoicing.contractor.ContractorResponse;
+import com.example.invoicing.user.UserEntity;
+import com.example.invoicing.user.UserSummaryResponse;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +33,8 @@ public class InvoiceResponse {
     private BigDecimal totalGross;
     private String notes;
     private String cancelReason;
+    private UserSummaryResponse createdBy;
+    private UserSummaryResponse issuedBy;
 
     public static InvoiceResponse from(InvoiceEntity invoiceEntity) {
         InvoiceResponse invoiceResponse = new InvoiceResponse();
@@ -54,6 +58,12 @@ public class InvoiceResponse {
         invoiceResponse.setTotalGross(invoiceEntity.getTotalGross());
         invoiceResponse.setNotes(invoiceEntity.getNotes());
         invoiceResponse.setCancelReason(invoiceEntity.getCancelReason());
+
+        UserEntity createdBy = invoiceEntity.getCreatedBy();
+        UserEntity issuedBy = invoiceEntity.getIssuedBy();
+
+        invoiceResponse.setCreatedBy(createdBy != null ? UserSummaryResponse.from(createdBy) : null);
+        invoiceResponse.setIssuedBy(issuedBy != null ? UserSummaryResponse.from(issuedBy) : null);
 
         return invoiceResponse;
     }

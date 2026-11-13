@@ -31,7 +31,7 @@ public class InvoiceController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Page<InvoiceMinimalResponse> getAll(
+    public Page<InvoiceSummaryResponse> getAll(
         @PageableDefault(size = DEFAULT_PAGE_SIZE, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
         @ModelAttribute InvoiceFilter filter
     ) {

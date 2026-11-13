@@ -28,14 +28,14 @@ public class InvoiceService {
     private final InvoiceNumberSequenceRepository invoiceNumberSequenceRepository;
     private final OrganizationRepository organizationRepository;
 
-    public Page<InvoiceMinimalResponse> getAll(Pageable pageable, InvoiceFilter filter) {
+    public Page<InvoiceSummaryResponse> getAll(Pageable pageable, InvoiceFilter filter) {
         log.info("FILTER -> " + filter);
         return invoiceRepository
             .getAllByFilter(
                 pageable, filter.getStatus(), filter.getContractorId(), filter.getIssueDateFrom(), filter.getIssueDateTo(),
                 filter.getOverdue()
             )
-            .map(i -> InvoiceMinimalResponse.from(i));
+            .map(i -> InvoiceSummaryResponse.from(i));
     }
 
     public InvoiceResponse create(InvoiceCreateRequest request) {
