@@ -12,6 +12,8 @@ import com.example.invoicing.common.exception.ApiException;
 import com.example.invoicing.common.exception.ErrorCode;
 import com.example.invoicing.contractor.ContractorEntity;
 import com.example.invoicing.contractor.ContractorService;
+import com.example.invoicing.organization.OrganizationEntity;
+import com.example.invoicing.organization.OrganizationRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final ContractorService contractorService;
     private final InvoiceNumberSequenceRepository invoiceNumberSequenceRepository;
+    private final OrganizationRepository organizationRepository;
 
     public Page<InvoiceMinimalResponse> getAll(Pageable pageable, InvoiceFilter filter) {
         log.info("FILTER -> " + filter);
@@ -158,8 +161,10 @@ public class InvoiceService {
         int issueMonth = invoiceEntity.getIssueDate().getMonthValue();
         int issueYear = invoiceEntity.getIssueDate().getYear();
 
+        OrganizationEntity organizationEntity = organizationRepository.findAll().getFirst();
+
         InvoiceNumberSequenceEntity sequence = invoiceNumberSequenceRepository.findByMonthAndYear(issueMonth, issueYear)
-            .orElseGet(() -> new InvoiceNumberSequenceEntity(issueMonth, issueYear, 0));
+            .orElseGet(() -> new InvoiceNumberSequenceEntity(issueMonth, issueYear, 0, organizationEntity));
 
         sequence.setLastNumber(sequence.getLastNumber() + 1);
 

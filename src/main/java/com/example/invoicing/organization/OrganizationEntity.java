@@ -29,7 +29,7 @@ public class OrganizationEntity {
     @Column(nullable = false, length = 150)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 10)
     private String nip;
 
     @Embedded

@@ -9,6 +9,8 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import com.example.invoicing.contractor.ContractorEntity;
+import com.example.invoicing.organization.OrganizationEntity;
+import com.example.invoicing.user.UserEntity;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
@@ -26,13 +28,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "invoice")
+@Table(name = "invoice", uniqueConstraints = @UniqueConstraint(columnNames = { "number", "organization_id" }))
 @Getter
 @Setter
 @ToString
@@ -45,7 +48,6 @@ public class InvoiceEntity {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(unique = true)
     private String number;
 
     @Enumerated(EnumType.STRING)
@@ -78,6 +80,18 @@ public class InvoiceEntity {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice", orphanRemoval = true)
     @OrderBy(value = "position")
     private List<ItemEntity> items = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id", nullable = false)
+    private OrganizationEntity organization;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", nullable = false)
+    private UserEntity createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issued_by_id")
+    private UserEntity issuedBy;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice", orphanRemoval = true)
     private List<PaymentEntity> payments = new ArrayList<>();

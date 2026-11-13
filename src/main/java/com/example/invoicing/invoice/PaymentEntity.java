@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.example.invoicing.user.UserEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -45,4 +47,8 @@ public class PaymentEntity {
 
     @Column(length = 100)
     private String reference;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recorded_by_id", nullable = false)
+    private UserEntity recordedBy;
 }
