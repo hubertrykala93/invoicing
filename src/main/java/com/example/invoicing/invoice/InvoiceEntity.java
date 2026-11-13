@@ -29,11 +29,13 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "invoice")
 @Getter
 @Setter
+@ToString
 public class InvoiceEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -179,5 +181,9 @@ public class InvoiceEntity {
 
     public boolean isPayable() {
         return status == Status.ISSUED || status == Status.PARTIALLY_PAID;
+    }
+
+    public boolean isIssued() {
+        return status == Status.ISSUED || status == Status.PARTIALLY_PAID || status == Status.PAID;
     }
 }
