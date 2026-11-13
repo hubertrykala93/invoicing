@@ -50,7 +50,7 @@ public class InvoiceEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    // @Setter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private Status status = Status.DRAFT;
 
     @ManyToOne(fetch = FetchType.LAZY)

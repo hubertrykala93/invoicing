@@ -10,5 +10,5 @@ public enum Unit {
     HOUR("hour"),
     SERVICE("service");
 
-    private final String unit;
+    private final String label;
 }

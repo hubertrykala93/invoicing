@@ -1,11 +1,18 @@
 package com.example.invoicing.invoice;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum Status {
-    DRAFT,
-    ISSUED,
-    PARTIALLY_PAID,
-    PAID,
-    CANCELLED;
+    DRAFT("Draft"),
+    ISSUED("Issued"),
+    PARTIALLY_PAID("Partially Paid"),
+    PAID("Paid"),
+    CANCELLED("Cancelled");
+
+    private String label;
 
     public boolean canTransitionTo(Status target) {
         return switch (this) {
