@@ -186,4 +186,8 @@ public class InvoiceEntity {
     public boolean isIssued() {
         return status == Status.ISSUED || status == Status.PARTIALLY_PAID || status == Status.PAID;
     }
+
+    public boolean isPaid() {
+        return status == Status.PAID;
+    }
 }

@@ -179,6 +179,7 @@ public class ReportsService {
                     .multiply(BigDecimal.valueOf(100))
                     .divide(totalIncome, 2, RoundingMode.HALF_UP),
                 invoiceByContractor.stream()
+                    .filter(InvoiceEntity::isPaid)
                     .mapToLong(InvoiceEntity::getPaymentTermDays)
                     .average()
                     .orElse(0)
